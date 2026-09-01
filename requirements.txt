@@ -1,0 +1,2 @@
+# Python Dependencies (Optional local utility runner)
+# Standalone execution uses standard library (http.server, socketserver)

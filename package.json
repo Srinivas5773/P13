@@ -1,0 +1,37 @@
+{
+  "name": "brick-breaker-deluxe",
+  "version": "1.0.0",
+  "description": "Arcade Brick Breaker Game Engine & Canvas Simulator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "node scripts/build.js",
+    "test": "node tests/test_engine.js",
+    "dev": "node server.js",
+    "clean": "node -e \"console.log('Clean complete')\""
+  },
+  "keywords": [
+    "game",
+    "brick-breaker",
+    "arcade",
+    "canvas",
+    "javascript"
+  ],
+  "author": "Srinivas5773",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
+  }
+}
