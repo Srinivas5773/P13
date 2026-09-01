@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Brick Breaker Deluxe - Classic arcade brick breaker built with pure HTML5, CSS3, and JavaScript.">
+  <title>Brick Breaker Deluxe - Arcade Classic</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="theme-neon">
+  <!-- Game Container -->
+  <div class="game-wrapper">
+    <!-- Top HUD / Header -->
+    <header class="game-header">
+      <div class="header-left">
+        <div class="brand">
+          <div class="brand-bar"></div>
+          <h1 class="logo-text">BRICK<span class="highlight">BREAKER</span></h1>
+        </div>
+        <div class="hud-item level-badge">
+          <span class="label">STAGE</span>
+          <span class="value" id="hud-level">1</span>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="hud-item score-box">
+          <span class="label">SCORE</span>
+          <span class="value" id="hud-score">000000</span>
+        </div>
+        <div class="hud-item highscore-box">
+          <span class="label">TOP RECORD</span>
+          <span class="value" id="hud-highscore">000000</span>
+        </div>
+        <div class="hud-item combo-box" id="hud-combo-box">
+          <span class="label">MULTIPLIER</span>
+          <span class="value" id="hud-combo">1.0x</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="hud-item lives-box">
+          <span class="label">HULL INTEGRITY</span>
+          <div class="health-pips" id="hud-lives">
+            <span class="pip full"></span>
+            <span class="pip full"></span>
+            <span class="pip full"></span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="btn-sound-toggle" class="action-tag-btn" title="Toggle Sound">AUDIO: ON</button>
+          <button id="btn-pause-toggle" class="action-tag-btn" title="Pause Game (P)">PAUSE</button>
+          <button id="btn-settings" class="action-tag-btn" title="Settings">CONFIG</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Active Powerups HUD Bar -->
+    <div class="powerup-hud" id="active-powerups-hud">
+      <!-- Dynamically populated active powerup badges -->
+    </div>
+
+    <!-- Main Game Area with Canvas and Overlay Screens -->
+    <main class="game-area">
+      <canvas id="game-canvas" width="800" height="600"></canvas>
+
+      <!-- Start Screen Overlay -->
+      <div class="overlay-screen active" id="screen-start">
+        <div class="modal-card">
+          <div class="modal-glow"></div>
+          <div class="hero-title">
+            <div class="arcade-title">BRICK BREAKER</div>
+            <div class="arcade-subtitle">DELUXE ARCADE SYSTEM</div>
+          </div>
+          
+          <div class="game-modes-grid">
+            <button class="mode-card active" data-mode="campaign">
+              <div class="mode-tag">[CAMPAIGN]</div>
+              <div class="mode-info">
+                <h3>CAMPAIGN MODE</h3>
+                <p>50 handcrafted progressive sectors with dynamic obstacle layouts.</p>
+              </div>
+            </button>
+
+            <button class="mode-card" data-mode="endless">
+              <div class="mode-tag">[ENDLESS]</div>
+              <div class="mode-info">
+                <h3>ENDLESS SURVIVAL</h3>
+                <p>Continuous descending brick matrices. Maximize your score.</p>
+              </div>
+            </button>
+
+            <button class="mode-card" data-mode="chaos">
+              <div class="mode-tag">[FRENZY]</div>
+              <div class="mode-info">
+                <h3>POWER FRENZY</h3>
+                <p>Increased capsule drops and high-velocity multi-ball arcade action.</p>
+              </div>
+            </button>
+          </div>
+
+          <div class="start-actions">
+            <button id="btn-play-game" class="btn btn-primary pulse-anim">
+              LAUNCH GAME
+            </button>
+            <div class="secondary-actions">
+              <button id="btn-open-levels" class="btn btn-secondary">
+                STAGE SELECT
+              </button>
+              <button id="btn-open-achievements" class="btn btn-secondary">
+                ACHIEVEMENTS
+              </button>
+              <button id="btn-open-help" class="btn btn-secondary">
+                SYSTEM MANUAL
+              </button>
+            </div>
+          </div>
+
+          <div class="quick-controls-hint">
+            <span>Controls: <strong>[Mouse / Touch / Arrow Keys]</strong> Move | <strong>[Space / Click]</strong> Launch & Fire</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pause Screen Overlay -->
+      <div class="overlay-screen hidden" id="screen-pause">
+        <div class="modal-card mini">
+          <h2>SYSTEM PAUSED</h2>
+          <p class="pause-tip">Simulation temporarily suspended.</p>
+          <div class="modal-btn-stack">
+            <button id="btn-resume-game" class="btn btn-primary">RESUME</button>
+            <button id="btn-restart-level" class="btn btn-secondary">RESTART SECTOR</button>
+            <button id="btn-open-settings-paused" class="btn btn-secondary">SETTINGS</button>
+            <button id="btn-quit-to-menu" class="btn btn-danger">MAIN MENU</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Level Complete Overlay -->
+      <div class="overlay-screen hidden" id="screen-level-complete">
+        <div class="modal-card">
+          <div class="status-badge-clear">SECTOR CLEARED</div>
+          <h2 class="victory-heading">STAGE OBJECTIVE COMPLETE</h2>
+          <div class="stats-summary-grid">
+            <div class="stat-cell">
+              <span class="stat-label">Sector Score</span>
+              <span class="stat-val" id="summary-stage-score">0</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-label">Peak Multiplier</span>
+              <span class="stat-val" id="summary-max-combo">1.0x</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-label">Bricks Cleared</span>
+              <span class="stat-val" id="summary-bricks-smashed">0</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-label">Accuracy Bonus</span>
+              <span class="stat-val" id="summary-accuracy">+500</span>
+            </div>
+          </div>
+          <div class="modal-btn-stack">
+            <button id="btn-next-level" class="btn btn-primary pulse-anim">ADVANCE TO NEXT SECTOR</button>
+            <button id="btn-replay-level" class="btn btn-secondary">REPLAY SECTOR</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Over Overlay -->
+      <div class="overlay-screen hidden" id="screen-game-over">
+        <div class="modal-card">
+          <div class="status-badge-fail">HULL COMPROMISED</div>
+          <h2 class="defeat-heading">SIMULATION TERMINATED</h2>
+          <p class="sub-text">Final performance telemetry recorded.</p>
+          <div class="stats-summary-grid">
+            <div class="stat-cell">
+              <span class="stat-label">Final Score</span>
+              <span class="stat-val" id="gameover-final-score">0</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-label">Sector Reached</span>
+              <span class="stat-val" id="gameover-stage">1</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-label">Total Bricks</span>
+              <span class="stat-val" id="gameover-total-bricks">0</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-label">High Record</span>
+              <span class="stat-val" id="gameover-highscore">0</span>
+            </div>
+          </div>
+          <div class="modal-btn-stack">
+            <button id="btn-try-again" class="btn btn-primary pulse-anim">INITIATE RETRY</button>
+            <button id="btn-gameover-menu" class="btn btn-secondary">MAIN MENU</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Level Select Modal -->
+      <div class="overlay-screen hidden" id="screen-level-select">
+        <div class="modal-card large">
+          <div class="modal-header">
+            <h2>SECTOR DIRECTORY</h2>
+            <button class="btn-close-modal" id="btn-close-levels">CLOSE [ESC]</button>
+          </div>
+          <p class="modal-desc">Select an authorized sector to deploy:</p>
+          <div class="levels-grid" id="levels-grid-container">
+            <!-- Populated via JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Achievements Modal -->
+      <div class="overlay-screen hidden" id="screen-achievements">
+        <div class="modal-card large">
+          <div class="modal-header">
+            <h2>SERVICE RECORDS & ACHIEVEMENTS</h2>
+            <button class="btn-close-modal" id="btn-close-achievements">CLOSE [ESC]</button>
+          </div>
+          <div class="achievements-list" id="achievements-list-container">
+            <!-- Populated via JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- How to Play / Help Modal -->
+      <div class="overlay-screen hidden" id="screen-help">
+        <div class="modal-card large">
+          <div class="modal-header">
+            <h2>SYSTEM MANUAL & SPECIFICATIONS</h2>
+            <button class="btn-close-modal" id="btn-close-help">CLOSE [ESC]</button>
+          </div>
+          <div class="help-content-scroll">
+            <section class="help-section">
+              <h3>OPERATOR CONTROLS</h3>
+              <ul class="help-list">
+                <li><strong>Mouse / Touch:</strong> Smooth horizontal paddle tracking.</li>
+                <li><strong>Left / Right Keys (or A / D):</strong> Precision directional control.</li>
+                <li><strong>Spacebar / Left Click:</strong> Deploy ball / discharge laser cannons.</li>
+                <li><strong>P key:</strong> Suspend or resume simulation.</li>
+                <li><strong>M key:</strong> Toggle audio synthesizer output.</li>
+              </ul>
+            </section>
+
+            <section class="help-section">
+              <h3>POWER MODULATION MODULES</h3>
+              <div class="powerup-guide-grid">
+                <div class="p-guide-item"><span class="p-guide-tag">[MULTI]</span> <strong>Multi-Ball:</strong> Spawns 2 auxiliary velocity spheres.</div>
+                <div class="p-guide-item"><span class="p-guide-tag">[LASER]</span> <strong>Laser Cannons:</strong> Equips dual forward pulse emitters.</div>
+                <div class="p-guide-item"><span class="p-guide-tag">[PIERCE]</span> <strong>Pierce Ball:</strong> Pierces through breakable matrices without deflection.</div>
+                <div class="p-guide-item"><span class="p-guide-tag">[WIDE]</span> <strong>Wide Chassis:</strong> Extends paddle interception profile by 45%.</div>
+                <div class="p-guide-item"><span class="p-guide-tag">[SHIELD]</span> <strong>Energy Shield:</strong> Deploy lower defensive perimeter barrier.</div>
+                <div class="p-guide-item"><span class="p-guide-tag">[CATCH]</span> <strong>Magnetic Grip:</strong> Catches sphere for recalibrated launch angle.</div>
+                <div class="p-guide-item"><span class="p-guide-tag">[SLOW]</span> <strong>Dilation:</strong> Slows target velocity for precision trajectory.</div>
+                <div class="p-guide-item"><span class="p-guide-tag">[HULL+]</span> <strong>Hull Repair:</strong> Restores 1 unit of chassis integrity.</div>
+              </div>
+            </section>
+
+            <section class="help-section">
+              <h3>BRICK SPECIFICATIONS</h3>
+              <div class="brick-guide-grid">
+                <div class="b-guide-item"><span class="b-swatch b-std"></span> <strong>Standard (1 HP):</strong> Breaks on initial impact.</div>
+                <div class="b-guide-item"><span class="b-swatch b-med"></span> <strong>Reinforced (2 HP):</strong> Structural fractures on 1st hit.</div>
+                <div class="b-guide-item"><span class="b-swatch b-heavy"></span> <strong>Armored (3 HP):</strong> Heavy compound plating.</div>
+                <div class="b-guide-item"><span class="b-swatch b-steel"></span> <strong>Titanium (INV):</strong> Non-destructible deflection wall.</div>
+                <div class="b-guide-item"><span class="b-swatch b-bomb"></span> <strong>TNT Explosive:</strong> Radius blast clearing surrounding blocks.</div>
+                <div class="b-guide-item"><span class="b-swatch b-star"></span> <strong>Supply Cache:</strong> Guaranteed module drop upon breach.</div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Modal -->
+      <div class="overlay-screen hidden" id="screen-settings">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h2>SYSTEM CONFIGURATION</h2>
+            <button class="btn-close-modal" id="btn-close-settings">CLOSE [ESC]</button>
+          </div>
+          <div class="settings-form">
+            <div class="setting-row">
+              <label for="setting-theme">Display Matrix Palette</label>
+              <select id="setting-theme" class="select-input">
+                <option value="theme-neon">Neon Cyberpunk</option>
+                <option value="theme-retro">Classic Arcade</option>
+                <option value="theme-synthwave">Sunset Synthwave</option>
+                <option value="theme-emerald">Emerald Matrix</option>
+                <option value="theme-cosmic">Cosmic Indigo</option>
+              </select>
+            </div>
+
+            <div class="setting-row">
+              <label for="setting-sound-vol">Synthesizer Volume</label>
+              <input type="range" id="setting-sound-vol" min="0" max="100" value="80">
+            </div>
+
+            <div class="setting-row">
+              <label for="setting-particles">Particle Engine</label>
+              <input type="checkbox" id="setting-particles" checked>
+            </div>
+
+            <div class="setting-row">
+              <label for="setting-screen-shake">Dynamic Impact Feedback</label>
+              <input type="checkbox" id="setting-screen-shake" checked>
+            </div>
+            
+            <div class="setting-row danger-zone">
+              <button id="btn-reset-data" class="btn btn-sm btn-danger">RESET SYSTEM TELEMETRY</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Touch Virtual Controls (shown only on touch devices) -->
+    <div class="touch-controls" id="touch-controls">
+      <button class="touch-btn" id="touch-left" aria-label="Move Left">◀</button>
+      <button class="touch-btn action-btn" id="touch-action" aria-label="Launch / Fire">LAUNCH / FIRE</button>
+      <button class="touch-btn" id="touch-right" aria-label="Move Right">▶</button>
+    </div>
+
+    <!-- Bottom Status / Hint Bar -->
+    <footer class="game-footer">
+      <div class="footer-tip" id="footer-tip">
+        <span>TIP: Paddle edge deflection creates sharp angular ricochets.</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts: Modular Architecture -->
+  <script src="js/audio.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/powerups.js"></script>
+  <script src="js/bricks.js"></script>
+  <script src="js/ball.js"></script>
+  <script src="js/paddle.js"></script>
+  <script src="js/data/levels_dataset_1.js"></script>
+  <script src="js/data/levels_dataset_2.js"></script>
+  <script src="js/data/brick_patterns_dataset.js"></script>
+  <script src="js/data/achievements_data.js"></script>
+  <script src="js/data/arcade_campaign_maps.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
